@@ -1,0 +1,190 @@
+---
+title: Deliverable 1 
+output: html_notebook
+---
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+Start up code and loading R libraries: 
+
+```{r}
+#start up code 
+#clear R
+rm(list = ls())
+
+#load the libraries 
+library(scales)
+library(ggplot2)
+library(rio)
+```
+
+Laading in the data from Git Hub: 
+
+```{r}
+#load the data from github 
+link="https://github.com/Many-Plots-Here/deliv1/raw/main/Best_Movie_by_Year_Netflix.csv"
+
+MovieFile=import(link)
+View(MovieFile)
+```
+
+Create an absolute values table: 
+```{r}
+absoluteT=table(MovieFile$MAIN_GENRE,
+                exclude = 'nothing')
+
+absoluteT
+```
+
+Turn aboslute values table into a prop table and then convert entries into percents:
+```{r}
+prop.table(absoluteT) #create prop table 
+
+GenrePercent=prop.table(absoluteT)*100 #turn them into percents 
+GenrePercent
+
+```
+
+Convert the frequency table into a data frame 
+```{r}
+tableFreq=as.data.frame(absoluteT) #turn the frequency table into a data frame 
+
+names(tableFreq)=c("Genre", "Count") #rename data frame columns 
+
+tableFreq$Percent=as.vector(GenrePercent) #add column for percentages 
+
+tableFreq #view the table 
+```
+Data visualization prep: 
+```{r}
+#create the base 
+base=ggplot(data = tableFreq,
+            aes(x = Genre, 
+                y = Percent))
+```
+
+Plot 1: input the data 
+```{r}
+#add layer that produces the main plot 
+plot1 = base + geom_bar(fill = "gray",
+                        stat = 'identity')
+plot1
+```
+
+Plot 2: Add titles 
+```{r}
+#adding titles
+titleText='Best Movies on Netflix in 2022'
+sourceText= 'Source: Kaggle.com Netflix TV Shows and Movies (2022)'
+
+#add layer that adds the titles
+plot2 = plot1 + labs(title=titleText,
+                     x = NULL,
+                     y = NULL,
+                     caption = sourceText
+                     )
+plot2
+```
+
+Plot 3: Add a horizontal line 
+```{r}
+#add a horizontal line
+plot3 = plot2 + geom_hline(yintercept = 10,
+                           linetype= "dashed",
+                           size=1.5,
+                           alpha=0.5)
+plot3
+```
+Plot 4: Customize the vertical axes 
+```{r}
+#customize the vertical axes 
+plot4 = plot3 + scale_y_continuous(breaks =  c(0, 5, 10, 20, 40),
+                          limits = c(0, 45),
+                          labels=unit_format(suffix = '%'))
+plot4
+```
+Plot 5: Reposition the title and subtitle
+```{r}
+#reposition the title and subtitle
+plot5 = plot4 + theme(plot.caption = element_text(hjust = 0), 
+                      plot.title = element_text(hjust = 0.5))
+plot5
+```
+Plot 6: Add value labels 
+```{r}
+#add values 
+paste0(round(tableFreq$Percent,2), '%')
+LABELS=paste0(round(tableFreq$Percent,2), '%')
+###
+plot6 = plot5 + geom_text(vjust=0, #hjust if flipping
+                          size = 3,
+                          aes(y = Percent ,
+                              label = LABELS))
+plot6
+
+```
+Ruruning the plots to have reordered bars:
+```{r}
+#ordering bars
+tableFreq=tableFreq[order(tableFreq$Percent),]
+
+(GenreOrd=tableFreq[order(tableFreq$Percent),'Genre'])
+
+##adding this to the base 
+LABELS=paste0(round(tableFreq$Percent,2), '%')
+base= ggplot(data = tableFreq, 
+             aes(x = Genre,y = Percent)) 
+## adding these to base
+base= base + scale_x_discrete(limits=GenreOrd) 
+base= base + theme_classic()
+
+#redo everything, copying from above 
+
+#add layer that produces the main plot 
+plot1 = base + geom_bar(fill = "gray",
+                        stat = 'identity')
+
+#adding titles
+titleText='Best Movies on Netflix in 2022'
+sourceText= 'Source: Kaggle.com Netflix TV Shows and Movies (2022)'
+
+#add layer that adds the titles
+plot2 = plot1 + labs(title=titleText,
+                     x = NULL,
+                     y = NULL,
+                     caption = sourceText
+)
+
+#add a horizontal line
+plot3 = plot2 + geom_hline(yintercept = 10,
+                           linetype= "dashed",
+                           size=1.5,
+                           alpha=0.5)
+
+#customize the vertical axes 
+plot4 = plot3 + scale_y_continuous(breaks =  c(0, 5, 10, 20, 40),
+                                   limits = c(0, 45),
+                                   labels=unit_format(suffix = '%'))
+
+#reposition the title and subtitle
+plot5 = plot4 + theme(plot.caption = element_text(hjust = 0), 
+                      plot.title = element_text(hjust = 0.5))
+
+#add values 
+paste0(round(tableFreq$Percent,2), '%')
+LABELS=paste0(round(tableFreq$Percent,2), '%')
+###
+plot6 = plot5 + geom_text(vjust=0, #hjust if flipping
+                          size = 3,
+                          aes(y = Percent ,
+                              label = LABELS))
+plot6
+```
+```
+
+Uploading to Git Hub: (?)
+
